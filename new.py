@@ -348,10 +348,26 @@ def run_gui():
     root.resizable(True, True)
 
     # ── Fullscreen maximize (dengan titlebar, bisa minimize) ──────────────
+    # Sembunyikan dulu, maximize, update, baru tampilkan
+    # Ini memastikan winfo_screenwidth/height terbaca dengan benar
+    root.withdraw()
     try:
         root.attributes("-zoomed", True)   # Linux / Raspberry Pi OS
     except tk.TclError:
         root.state("zoomed")               # fallback Windows/Mac
+
+    root.update_idletasks()
+    root.deiconify()
+    root.update_idletasks()
+
+    # Ambil ukuran layar (bukan ukuran window) — ini yang paling reliable
+    SW = root.winfo_screenwidth()
+    SH = root.winfo_screenheight()
+    print(f"📐 Ukuran layar terdeteksi: {SW}x{SH}")
+
+    # Set geometry eksplisit ke ukuran layar penuh (jaga-jaga -zoomed tidak bekerja)
+    root.geometry(f"{SW}x{SH}+0+0")
+    root.update_idletasks()
 
     # F11 → toggle fullscreen tanpa titlebar | Escape → keluar fullscreen
     _fs = [False]
@@ -363,11 +379,6 @@ def run_gui():
         root.attributes("-fullscreen", False)
     root.bind("<F11>",    toggle_fullscreen)
     root.bind("<Escape>", exit_fullscreen)
-
-    # Baca ukuran layar setelah window dibuka
-    root.update_idletasks()
-    SW = root.winfo_screenwidth()
-    SH = root.winfo_screenheight()
 
     # Ukuran panel — dalam PIXEL (bukan karakter)
     CAM_W  = int(SW * 0.60)
